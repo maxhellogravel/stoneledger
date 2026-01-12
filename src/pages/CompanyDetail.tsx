@@ -1,0 +1,146 @@
+// ABOUTME: Company detail page with order timeline
+// ABOUTME: Shows company info, orders, and placeholder for notes
+
+import { useParams, Link } from 'react-router-dom';
+import { getCompanyById, getOrdersForCompany } from '../data/companies';
+import { formatCurrency, formatDate, formatShortDate } from '../utils/format';
+
+export function CompanyDetail() {
+  const { id } = useParams<{ id: string }>();
+  const company = id ? getCompanyById(id) : undefined;
+  const orders = id ? getOrdersForCompany(id) : [];
+
+  if (!company) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Company Not Found</h1>
+          <Link to="/" className="text-blue-600 hover:text-blue-800">
+            ← Back to Companies
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <Link to="/" className="text-blue-600 hover:text-blue-800 text-sm mb-4 inline-block">
+          ← Back to Companies
+        </Link>
+
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">{company.name}</h1>
+          <p className="text-gray-500 mt-1">
+            {company.orderCount} orders · {formatCurrency(company.totalValueCents)} total
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-6">
+          {/* Main timeline area */}
+          <div className="col-span-2">
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="font-semibold text-gray-900">Timeline</h2>
+                <button className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                  + Add Note
+                </button>
+              </div>
+
+              <div className="divide-y divide-gray-100">
+                {orders.map(order => (
+                  <div key={order.id} className="px-4 py-4 hover:bg-gray-50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            Order
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {formatShortDate(order.startDate)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-gray-900 font-medium">{order.orderName}</p>
+                        <div className="mt-1 text-sm text-gray-600">
+                          {formatCurrency(order.valueCents)} · {order.turnaroundDays} day turnaround
+                        </div>
+                      </div>
+                      <a
+                        href={order.clickupLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        ClickUp →
+                      </a>
+                    </div>
+                  </div>
+                ))}
+
+                {orders.length === 0 && (
+                  <div className="px-4 py-8 text-center text-gray-500">
+                    No orders yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="col-span-1 space-y-4">
+            {/* Summary card */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Total Orders</dt>
+                  <dd className="text-gray-900 font-medium">{company.orderCount}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Total Value</dt>
+                  <dd className="text-gray-900 font-medium">{formatCurrency(company.totalValueCents)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Avg Order</dt>
+                  <dd className="text-gray-900 font-medium">
+                    {formatCurrency(Math.round(company.totalValueCents / company.orderCount))}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Last Order</dt>
+                  <dd className="text-gray-900 font-medium">{formatDate(company.lastOrderDate)}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Contacts placeholder */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold text-gray-900">Contacts</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-800">+ Add</button>
+              </div>
+              <p className="text-sm text-gray-500 italic">No contacts yet</p>
+            </div>
+
+            {/* Quick actions */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
+              <div className="space-y-2">
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                  Log a Call
+                </button>
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                  Schedule Follow-up
+                </button>
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                  Add Internal Note
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
