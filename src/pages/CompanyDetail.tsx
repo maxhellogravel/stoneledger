@@ -3,12 +3,14 @@
 
 import { useParams, Link } from 'react-router-dom';
 import { getCompanyById, getOrdersForCompany } from '../data/companies';
+import { getContactsForCompany } from '../data/contacts';
 import { formatCurrency, formatDate, formatShortDate } from '../utils/format';
 
 export function CompanyDetail() {
   const { id } = useParams<{ id: string }>();
   const company = id ? getCompanyById(id) : undefined;
   const orders = id ? getOrdersForCompany(id) : [];
+  const companyContacts = id ? getContactsForCompany(id) : [];
 
   if (!company) {
     return (
@@ -131,13 +133,35 @@ export function CompanyDetail() {
               </dl>
             </div>
 
-            {/* Contacts placeholder */}
+            {/* Contacts */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-bold text-gray-900">Contacts</h3>
                 <button className="text-sm text-brand-500 hover:text-brand-700 font-medium">+ Add</button>
               </div>
-              <p className="text-sm text-gray-500 italic">No contacts yet</p>
+              {companyContacts.length > 0 ? (
+                <div className="space-y-3">
+                  {companyContacts.map(contact => (
+                    <div key={contact.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                      <div className="font-medium text-gray-900">{contact.fullName}</div>
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="text-sm text-brand-500 hover:text-brand-700 flex items-center gap-1 mt-1"
+                      >
+                        <span>📞</span> {contact.phoneRaw}
+                      </a>
+                      <a
+                        href={`mailto:${contact.email}`}
+                        className="text-sm text-gray-500 hover:text-gray-700 block mt-0.5 truncate"
+                      >
+                        {contact.email}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">No contacts yet</p>
+              )}
             </div>
 
             {/* Quick actions */}
