@@ -30,10 +30,17 @@ async function fetchSheet(sheetId: string, range: string) {
   return response.data.values || [];
 }
 
-function parseCurrency(value: string): number {
-  if (!value) return 0;
-  const cleaned = value.replace(/[$,]/g, '');
-  return Math.round(parseFloat(cleaned) * 100) || 0;
+function parseCurrency(value: string | number | undefined): number {
+  if (value === undefined || value === null || value === '') return 0;
+  // Handle if Google Sheets returns a number directly
+  if (typeof value === 'number') {
+    return Math.round(value * 100);
+  }
+  // Handle string values (with or without $ and commas)
+  const cleaned = String(value).replace(/[$,]/g, '');
+  const parsed = parseFloat(cleaned);
+  if (isNaN(parsed)) return 0;
+  return Math.round(parsed * 100);
 }
 
 function generateId(str: string): string {
@@ -75,20 +82,25 @@ export const handler: Handler = async (event) => {
   try {
     // Fetch orders
     const ordersData = await fetchSheet(ORDERS_SHEET_ID, 'A2:G200');
-    const orders = ordersData.map((row: string[]) => {
+    const orders = ordersData.map((row: (string | number)[]) => {
       const [company, value, orderName, clickupLink, startDate, dueDate, turnaround] = row;
+      const companyStr = String(company || '');
+      const orderNameStr = String(orderName || '');
+      const clickupLinkStr = String(clickupLink || '');
+      const startDateStr = String(startDate || '');
+      const dueDateStr = String(dueDate || '');
       return {
-        id: generateId(clickupLink || orderName),
-        companyId: companyId(company || ''),
-        companyName: company || '',
-        orderName: orderName || '',
+        id: generateId(clickupLinkStr || orderNameStr),
+        companyId: companyId(companyStr),
+        companyName: companyStr,
+        orderName: orderNameStr,
         valueCents: parseCurrency(value),
-        clickupLink: clickupLink || '',
-        startDate: parseDate(startDate),
-        dueDate: parseDate(dueDate),
-        turnaroundDays: parseInt(turnaround) || 0,
+        clickupLink: clickupLinkStr,
+        startDate: parseDate(startDateStr),
+        dueDate: parseDate(dueDateStr),
+        turnaroundDays: parseInt(String(turnaround)) || 0,
       };
-    }).filter((o: { companyName: string }) => o.companyName);
+    }).filter((o) => o.companyName);
 
     // Fetch contacts
     const contactsData = await fetchSheet(CONTACTS_SHEET_ID, 'A2:I200');
