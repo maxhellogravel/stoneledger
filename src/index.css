@@ -1,4 +1,12 @@
 /* ABOUTME: Main stylesheet for StoneLedger */
-/* ABOUTME: Imports Tailwind CSS utilities */
+/* ABOUTME: Hello Gravel brand colors and Tailwind imports */
 
 @import "tailwindcss";
+
+@theme {
+  --color-brand-500: #E85D04;
+  --color-brand-600: #D45403;
+  --color-brand-700: #B84A03;
+  --color-brand-50: #FFF4ED;
+  --color-brand-100: #FFE6D5;
+}

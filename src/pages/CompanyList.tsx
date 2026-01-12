@@ -58,74 +58,82 @@ export function CompanyList() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-brand-500 text-white px-4 py-3">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold">StoneLedger</span>
+            <span className="text-brand-100 text-sm">Hello Gravel CRM</span>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">StoneLedger</h1>
-          <p className="text-gray-600 mt-1">B2B Customer Relationship Management</p>
-        </div>
-
+        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="text-sm text-gray-500">Total Companies</div>
-            <div className="text-2xl font-semibold text-gray-900">{companies.length}</div>
+            <div className="text-2xl font-bold text-gray-900">{companies.length}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="text-sm text-gray-500">Total Orders</div>
-            <div className="text-2xl font-semibold text-gray-900">{totalOrders}</div>
+            <div className="text-2xl font-bold text-gray-900">{totalOrders}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="text-sm text-gray-500">Total Revenue</div>
-            <div className="text-2xl font-semibold text-gray-900">{formatCurrency(totalValue)}</div>
+            <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalValue)}</div>
           </div>
         </div>
 
+        {/* Search */}
         <div className="mb-4">
           <input
             type="text"
             placeholder="Search companies..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Table */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th
-                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('name')}
                 >
                   Company <SortIcon field="name" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-right text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('orderCount')}
                 >
                   Orders <SortIcon field="orderCount" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-right text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('totalValueCents')}
                 >
                   Total Value <SortIcon field="totalValueCents" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-right text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('lastOrderDate')}
                 >
                   Last Order <SortIcon field="lastOrderDate" />
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-100">
               {filteredCompanies.map(company => (
                 <tr key={company.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <Link
                       to={`/company/${company.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
+                      className="text-brand-500 hover:text-brand-700 font-medium"
                     >
                       {company.name}
                     </Link>
