@@ -1,0 +1,15 @@
+# ABOUTME: Netlify configuration for StoneLedger
+# ABOUTME: Defines build settings and functions directory
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

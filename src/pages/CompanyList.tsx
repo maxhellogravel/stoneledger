@@ -3,13 +3,14 @@
 
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { companies } from '../data/companies';
+import { useData } from '../hooks/useData';
 import { formatCurrency, formatDate } from '../utils/format';
 
 type SortField = 'name' | 'orderCount' | 'totalValueCents' | 'lastOrderDate';
 type SortDirection = 'asc' | 'desc';
 
 export function CompanyList() {
+  const { companies, loading, error, refresh } = useData();
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<SortField>('totalValueCents');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -37,7 +38,7 @@ export function CompanyList() {
     });
 
     return result;
-  }, [search, sortField, sortDirection]);
+  }, [companies, search, sortField, sortDirection]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -56,6 +57,44 @@ export function CompanyList() {
   const totalValue = companies.reduce((sum, c) => sum + c.totalValueCents, 0);
   const totalOrders = companies.reduce((sum, c) => sum + c.orderCount, 0);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-brand-500 text-white px-4 py-3">
+          <div className="max-w-6xl mx-auto">
+            <span className="text-xl font-bold">StoneLedger</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-brand-500 text-white px-4 py-3">
+          <div className="max-w-6xl mx-auto">
+            <span className="text-xl font-bold">StoneLedger</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="text-red-500 mb-2">Error: {error}</div>
+            <button
+              onClick={refresh}
+              className="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -65,6 +104,12 @@ export function CompanyList() {
             <span className="text-xl font-bold">StoneLedger</span>
             <span className="text-brand-100 text-sm">Hello Gravel CRM</span>
           </div>
+          <button
+            onClick={refresh}
+            className="px-3 py-1 text-sm bg-brand-600 hover:bg-brand-700 rounded"
+          >
+            Refresh
+          </button>
         </div>
       </div>
 

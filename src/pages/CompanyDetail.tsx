@@ -1,16 +1,69 @@
 // ABOUTME: Company detail page with order timeline
-// ABOUTME: Shows company info, orders, and placeholder for notes
+// ABOUTME: Shows company info, orders, and contacts
 
+import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getCompanyById, getOrdersForCompany } from '../data/companies';
-import { getContactsForCompany } from '../data/contacts';
+import { useData } from '../hooks/useData';
 import { formatCurrency, formatDate, formatShortDate } from '../utils/format';
 
 export function CompanyDetail() {
   const { id } = useParams<{ id: string }>();
-  const company = id ? getCompanyById(id) : undefined;
-  const orders = id ? getOrdersForCompany(id) : [];
-  const companyContacts = id ? getContactsForCompany(id) : [];
+  const { companies, orders, contacts, loading, error, refresh } = useData();
+
+  const company = useMemo(
+    () => companies.find(c => c.id === id),
+    [companies, id]
+  );
+
+  const companyOrders = useMemo(
+    () => orders
+      .filter(o => o.companyId === id)
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()),
+    [orders, id]
+  );
+
+  const companyContacts = useMemo(
+    () => contacts.filter(c => c.companyId === id),
+    [contacts, id]
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-brand-500 text-white px-4 py-3">
+          <div className="max-w-6xl mx-auto">
+            <span className="text-xl font-bold">StoneLedger</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-brand-500 text-white px-4 py-3">
+          <div className="max-w-6xl mx-auto">
+            <span className="text-xl font-bold">StoneLedger</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="text-red-500 mb-2">Error: {error}</div>
+            <button
+              onClick={refresh}
+              className="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!company) {
     return (
@@ -41,6 +94,12 @@ export function CompanyDetail() {
             <Link to="/" className="text-xl font-bold hover:text-brand-100">StoneLedger</Link>
             <span className="text-brand-100 text-sm">Hello Gravel CRM</span>
           </div>
+          <button
+            onClick={refresh}
+            className="px-3 py-1 text-sm bg-brand-600 hover:bg-brand-700 rounded"
+          >
+            Refresh
+          </button>
         </div>
       </div>
 
@@ -68,7 +127,7 @@ export function CompanyDetail() {
               </div>
 
               <div className="divide-y divide-gray-100">
-                {orders.map(order => (
+                {companyOrders.map(order => (
                   <div key={order.id} className="px-4 py-4 hover:bg-gray-50">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -97,7 +156,7 @@ export function CompanyDetail() {
                   </div>
                 ))}
 
-                {orders.length === 0 && (
+                {companyOrders.length === 0 && (
                   <div className="px-4 py-8 text-center text-gray-500">
                     No orders yet
                   </div>
