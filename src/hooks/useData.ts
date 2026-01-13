@@ -12,7 +12,6 @@ export interface Order {
   clickupLink: string;
   startDate: string;
   dueDate: string;
-  turnaroundDays: number;
 }
 
 export interface Company {

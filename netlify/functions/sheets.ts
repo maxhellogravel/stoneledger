@@ -83,8 +83,8 @@ export const handler: Handler = async (event) => {
   const debug = event.queryStringParameters?.debug === 'true';
 
   try {
-    // Fetch orders (including header row for debug)
-    const ordersData = await fetchSheet(ORDERS_SHEET_ID, debug ? 'A1:G10' : 'A2:G200');
+    // Fetch orders from "Orders" tab, columns A-F
+    const ordersData = await fetchSheet(ORDERS_SHEET_ID, debug ? 'Orders!A1:F10' : 'Orders!A2:F500');
 
     if (debug) {
       return {
@@ -94,12 +94,13 @@ export const handler: Handler = async (event) => {
       };
     }
     const orders = ordersData.map((row: (string | number)[]) => {
-      const [company, value, orderName, clickupLink, startDate, dueDate, turnaround] = row;
-      const companyStr = String(company || '');
-      const orderNameStr = String(orderName || '');
-      const clickupLinkStr = String(clickupLink || '');
-      const startDateStr = String(startDate || '');
-      const dueDateStr = String(dueDate || '');
+      // Column A: Company, B: Value, C: Order ID, D: Clickup Link, E: Start Date, F: Due Date
+      const [company, value, orderName, clickupLink, startDate, dueDate] = row;
+      const companyStr = String(company || '').trim();
+      const orderNameStr = String(orderName || '').trim();
+      const clickupLinkStr = String(clickupLink || '').trim();
+      const startDateStr = String(startDate || '').trim();
+      const dueDateStr = String(dueDate || '').trim();
       return {
         id: generateId(clickupLinkStr || orderNameStr),
         companyId: companyId(companyStr),
@@ -109,7 +110,6 @@ export const handler: Handler = async (event) => {
         clickupLink: clickupLinkStr,
         startDate: parseDate(startDateStr),
         dueDate: parseDate(dueDateStr),
-        turnaroundDays: parseInt(String(turnaround)) || 0,
       };
     }).filter((o) => o.companyName);
 

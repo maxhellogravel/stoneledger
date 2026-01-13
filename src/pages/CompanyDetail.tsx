@@ -141,7 +141,7 @@ export function CompanyDetail() {
                         </div>
                         <p className="mt-1 text-gray-900 font-medium">{order.orderName}</p>
                         <div className="mt-1 text-sm text-gray-600">
-                          {formatCurrency(order.valueCents)} · {order.turnaroundDays} day turnaround
+                          {formatCurrency(order.valueCents)}
                         </div>
                       </div>
                       <a
