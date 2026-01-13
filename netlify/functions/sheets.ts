@@ -1,5 +1,5 @@
 // ABOUTME: Netlify Function to fetch data from Google Sheets
-// ABOUTME: Returns orders and contacts data from configured sheets
+// ABOUTME: Returns orders, contacts, and notes data from configured sheets
 
 import { google } from 'googleapis';
 import type { Handler } from '@netlify/functions';
@@ -138,6 +138,28 @@ export const handler: Handler = async (event) => {
       };
     }).filter((c) => c.companyName);
 
+    // Fetch notes from "Notes" tab in StoneLedger Data sheet
+    // A: ID, B: Company, C: Contact, D: Date, E: Author, F: Content
+    const notesData = await fetchSheet(STONELEDGER_DATA_SHEET_ID, 'Notes!A2:F500');
+    const notes = notesData.map((row: (string | number)[]) => {
+      const [id, company, contact, date, author, content] = row;
+      const idStr = String(id || '').trim();
+      const companyStr = String(company || '').trim();
+      const contactStr = String(contact || '').trim();
+      const dateStr = String(date || '').trim();
+      const authorStr = String(author || '').trim();
+      const contentStr = String(content || '').trim();
+      return {
+        id: idStr || generateId(`${companyStr}-${dateStr}-${contentStr.slice(0, 20)}`),
+        companyId: companyId(companyStr),
+        companyName: companyStr,
+        contact: contactStr,
+        date: parseDate(dateStr),
+        author: authorStr,
+        content: contentStr,
+      };
+    }).filter((n) => n.companyName && n.content);
+
     // Build companies from orders
     const companyMap = new Map<string, {
       id: string;
@@ -172,7 +194,7 @@ export const handler: Handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ companies, orders, contacts }),
+      body: JSON.stringify({ companies, orders, contacts, notes }),
     };
   } catch (error) {
     console.error('Error fetching sheets:', error);

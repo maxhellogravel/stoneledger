@@ -65,6 +65,7 @@ export interface Note {
   id: string;
   companyId: string;
   companyName: string;
+  contact: string;
   content: string;
   date: string;
   author: string;
@@ -74,6 +75,7 @@ interface DataState {
   companies: Company[];
   orders: Order[];
   contacts: Contact[];
+  notes: Note[];
   loading: boolean;
   error: string | null;
   refresh: () => void;
@@ -93,6 +95,7 @@ export function useDataProvider() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,6 +111,7 @@ export function useDataProvider() {
       setCompanies(data.companies || []);
       setOrders(data.orders || []);
       setContacts(data.contacts || []);
+      setNotes(data.notes || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -123,6 +127,7 @@ export function useDataProvider() {
     companies,
     orders,
     contacts,
+    notes,
     loading,
     error,
     refresh: fetchData,

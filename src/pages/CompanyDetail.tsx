@@ -3,12 +3,16 @@
 
 import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useData } from '../hooks/useData';
+import { useData, Order, Note } from '../hooks/useData';
 import { formatCurrency, formatDate, formatShortDate } from '../utils/format';
+
+type TimelineItem =
+  | { type: 'order'; date: string; data: Order }
+  | { type: 'note'; date: string; data: Note };
 
 export function CompanyDetail() {
   const { id } = useParams<{ id: string }>();
-  const { companies, orders, contacts, loading, error, refresh } = useData();
+  const { companies, orders, contacts, notes, loading, error, refresh } = useData();
 
   const company = useMemo(
     () => companies.find(c => c.id === id),
@@ -16,11 +20,22 @@ export function CompanyDetail() {
   );
 
   const companyOrders = useMemo(
-    () => orders
-      .filter(o => o.companyId === id)
-      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()),
+    () => orders.filter(o => o.companyId === id),
     [orders, id]
   );
+
+  const companyNotes = useMemo(
+    () => notes.filter(n => n.companyId === id),
+    [notes, id]
+  );
+
+  const timeline = useMemo(() => {
+    const items: TimelineItem[] = [
+      ...companyOrders.map(o => ({ type: 'order' as const, date: o.startDate, data: o })),
+      ...companyNotes.map(n => ({ type: 'note' as const, date: n.date, data: n })),
+    ];
+    return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [companyOrders, companyNotes]);
 
   const companyContacts = useMemo(
     () => contacts.filter(c => c.companyId === id),
@@ -127,38 +142,60 @@ export function CompanyDetail() {
               </div>
 
               <div className="divide-y divide-gray-100">
-                {companyOrders.map(order => (
-                  <div key={order.id} className="px-4 py-4 hover:bg-gray-50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                {timeline.map(item => (
+                  <div key={item.data.id} className="px-4 py-4 hover:bg-gray-50">
+                    {item.type === 'order' ? (
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800">
+                              Order
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              {formatShortDate(item.data.startDate)}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-gray-900 font-medium">{item.data.orderName}</p>
+                          <div className="mt-1 text-sm text-gray-600">
+                            {formatCurrency(item.data.valueCents)}
+                          </div>
+                        </div>
+                        <a
+                          href={item.data.clickupLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-brand-500 hover:text-brand-700 font-medium"
+                        >
+                          ClickUp →
+                        </a>
+                      </div>
+                    ) : (
+                      <div>
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800">
-                            Order
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            Note
                           </span>
                           <span className="text-sm text-gray-500">
-                            {formatShortDate(order.startDate)}
+                            {formatShortDate(item.data.date)}
                           </span>
+                          {item.data.contact && (
+                            <span className="text-sm text-gray-500">
+                              · {item.data.contact}
+                            </span>
+                          )}
                         </div>
-                        <p className="mt-1 text-gray-900 font-medium">{order.orderName}</p>
-                        <div className="mt-1 text-sm text-gray-600">
-                          {formatCurrency(order.valueCents)}
+                        <p className="mt-1 text-gray-900">{item.data.content}</p>
+                        <div className="mt-1 text-sm text-gray-500">
+                          — {item.data.author}
                         </div>
                       </div>
-                      <a
-                        href={order.clickupLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-brand-500 hover:text-brand-700 font-medium"
-                      >
-                        ClickUp →
-                      </a>
-                    </div>
+                    )}
                   </div>
                 ))}
 
-                {companyOrders.length === 0 && (
+                {timeline.length === 0 && (
                   <div className="px-4 py-8 text-center text-gray-500">
-                    No orders yet
+                    No activity yet
                   </div>
                 )}
               </div>
