@@ -34,6 +34,42 @@ export interface Contact {
   phoneRaw: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+}
+
+// Static users for now - will move to database later
+export const users: User[] = [
+  {
+    id: 'max-cannon',
+    name: 'Max Cannon',
+    email: 'max@hellogravel.com',
+    role: 'admin',
+  },
+];
+
+export const currentUser = users[0];
+
+export function getUserById(id: string): User | undefined {
+  return users.find(u => u.id === id);
+}
+
+export function getUserByName(name: string): User | undefined {
+  return users.find(u => u.name.toLowerCase() === name.toLowerCase());
+}
+
+export interface Note {
+  id: string;
+  companyId: string;
+  companyName: string;
+  content: string;
+  date: string;
+  author: string;
+}
+
 interface DataState {
   companies: Company[];
   orders: Order[];
