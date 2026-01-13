@@ -113,22 +113,29 @@ export const handler: Handler = async (event) => {
       };
     }).filter((o) => o.companyName);
 
-    // Fetch contacts
-    const contactsData = await fetchSheet(CONTACTS_SHEET_ID, 'A2:I200');
-    const contacts = contactsData.map((row: string[]) => {
-      const [email, phone, company, , firstName, lastName, fullName, phoneRaw] = row;
+    // Fetch contacts from "Final List" tab, columns A-G
+    // A: email, B: phone, C: Company, D: country (skip), E: first name, F: last name, G: full name
+    const contactsData = await fetchSheet(CONTACTS_SHEET_ID, 'Final List!A2:G500');
+    const contacts = contactsData.map((row: (string | number)[]) => {
+      const [email, phone, company, , firstName, lastName, fullName] = row;
+      const emailStr = String(email || '').trim();
+      const phoneStr = String(phone || '').trim();
+      const companyStr = String(company || '').trim();
+      const firstNameStr = String(firstName || '').trim();
+      const lastNameStr = String(lastName || '').trim();
+      const fullNameStr = String(fullName || '').trim() || `${firstNameStr} ${lastNameStr}`.trim();
       return {
-        id: generateId(email || ''),
-        companyId: companyId(company || ''),
-        companyName: company || '',
-        firstName: firstName || '',
-        lastName: lastName || '',
-        fullName: fullName || `${firstName || ''} ${lastName || ''}`.trim(),
-        email: email || '',
-        phone: phone || '',
-        phoneRaw: phoneRaw || phone || '',
+        id: generateId(emailStr || phoneStr),
+        companyId: companyId(companyStr),
+        companyName: companyStr,
+        firstName: firstNameStr,
+        lastName: lastNameStr,
+        fullName: fullNameStr,
+        email: emailStr,
+        phone: phoneStr,
+        phoneRaw: phoneStr,
       };
-    }).filter((c: { companyName: string }) => c.companyName);
+    }).filter((c) => c.companyName);
 
     // Build companies from orders
     const companyMap = new Map<string, {
