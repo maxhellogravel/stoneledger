@@ -79,9 +79,20 @@ export const handler: Handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
+  // Debug mode - return raw data
+  const debug = event.queryStringParameters?.debug === 'true';
+
   try {
-    // Fetch orders
-    const ordersData = await fetchSheet(ORDERS_SHEET_ID, 'A2:G200');
+    // Fetch orders (including header row for debug)
+    const ordersData = await fetchSheet(ORDERS_SHEET_ID, debug ? 'A1:G10' : 'A2:G200');
+
+    if (debug) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ rawOrders: ordersData }, null, 2),
+      };
+    }
     const orders = ordersData.map((row: (string | number)[]) => {
       const [company, value, orderName, clickupLink, startDate, dueDate, turnaround] = row;
       const companyStr = String(company || '');
