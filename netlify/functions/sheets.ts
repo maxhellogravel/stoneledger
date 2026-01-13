@@ -5,7 +5,7 @@ import { google } from 'googleapis';
 import type { Handler } from '@netlify/functions';
 
 const ORDERS_SHEET_ID = '1W9mqlDCNvICWOrd78JR7OMgvleUDWzyM0QqymC2syck';
-const CONTACTS_SHEET_ID = '1PXUsDE16nUx7FusxtsSKdIrtmDyFDnMy4x_V_QHYBQY';
+const STONELEDGER_DATA_SHEET_ID = '128uU-hzHYyUemdvoxSICRQyBpRTD5N0L38lximZ_Qhg';
 
 async function getAuthClient() {
   const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}');
@@ -113,19 +113,20 @@ export const handler: Handler = async (event) => {
       };
     }).filter((o) => o.companyName);
 
-    // Fetch contacts from "Final List" tab, columns A-G
-    // A: email, B: phone, C: Company, D: country (skip), E: first name, F: last name, G: full name
-    const contactsData = await fetchSheet(CONTACTS_SHEET_ID, 'Final List!A2:G500');
+    // Fetch contacts from "Contacts" tab in StoneLedger Data sheet
+    // A: ID, B: Company, C: First Name, D: Last Name, E: Email, F: Phone
+    const contactsData = await fetchSheet(STONELEDGER_DATA_SHEET_ID, 'Contacts!A2:F500');
     const contacts = contactsData.map((row: (string | number)[]) => {
-      const [email, phone, company, , firstName, lastName, fullName] = row;
-      const emailStr = String(email || '').trim();
-      const phoneStr = String(phone || '').trim();
+      const [id, company, firstName, lastName, email, phone] = row;
+      const idStr = String(id || '').trim();
       const companyStr = String(company || '').trim();
       const firstNameStr = String(firstName || '').trim();
       const lastNameStr = String(lastName || '').trim();
-      const fullNameStr = String(fullName || '').trim() || `${firstNameStr} ${lastNameStr}`.trim();
+      const emailStr = String(email || '').trim();
+      const phoneStr = String(phone || '').trim();
+      const fullNameStr = `${firstNameStr} ${lastNameStr}`.trim();
       return {
-        id: generateId(emailStr || phoneStr),
+        id: idStr || generateId(emailStr || phoneStr || `${companyStr}-${firstNameStr}`),
         companyId: companyId(companyStr),
         companyName: companyStr,
         firstName: firstNameStr,
